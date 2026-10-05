@@ -1,55 +1,67 @@
-import { useState } from 'react'
+import { useState } from "react";
 
-const WEBHOOK_URL = import.meta.env.VITE_WEBHOOK_URL
+const WEBHOOK_URL = import.meta.env.VITE_WEBHOOK_URL;
 
-const ROLES = ['Frontend', 'Backend', 'Full Stack', 'QA', 'DevOps']
+const ROLES = ["Frontend", "Backend", "Full Stack", "QA", "DevOps"];
 
-const FIELDS = ['name', 'whatsapp_number', 'role', 'join_date', 'manager_whatsapp']
+const FIELDS = [
+  "name",
+  "whatsapp_number",
+  "role",
+  "join_date",
+  "manager_whatsapp",
+];
 
 const emptyForm = {
-  name: '',
-  whatsapp_number: '',
-  role: '',
-  join_date: '',
-  manager_whatsapp: '',
-}
+  name: "",
+  whatsapp_number: "",
+  role: "",
+  join_date: "",
+  manager_whatsapp: "",
+};
 
-const isPhone = (v) => /^\d{10,15}$/.test(v)
+const isPhone = (v) => /^\d{10,15}$/.test(v);
 
-const iso = (d) => d.toISOString().slice(0, 10)
+const iso = (d) => d.toISOString().slice(0, 10);
 
 const shiftYears = (n) => {
-  const d = new Date()
-  d.setFullYear(d.getFullYear() + n)
-  return iso(d)
-}
+  const d = new Date();
+  d.setFullYear(d.getFullYear() + n);
+  return iso(d);
+};
 
-const MIN_DATE = shiftYears(-1)
-const MAX_DATE = shiftYears(1)
+const MIN_DATE = shiftYears(-1);
+const MAX_DATE = shiftYears(1);
 
 function validate(form) {
-  const errors = {}
+  const errors = {};
 
-  const name = form.name.trim()
-  if (!name) errors.name = "Enter the developer's full name."
-  else if (name.length < 2) errors.name = 'The name must be at least 2 letters.'
-  else if (!/^\p{L}[\p{L} .'-]*$/u.test(name)) errors.name = 'Use letters only in the name.'
+  const name = form.name.trim();
+  if (!name) errors.name = "Enter the developer's full name.";
+  else if (name.length < 2)
+    errors.name = "The name must be at least 2 letters.";
+  else if (!/^\p{L}[\p{L} .'-]*$/u.test(name))
+    errors.name = "Use letters only in the name.";
 
-  if (!form.whatsapp_number) errors.whatsapp_number = 'Enter the WhatsApp number.'
+  if (!form.whatsapp_number)
+    errors.whatsapp_number = "Enter the WhatsApp number.";
   else if (!isPhone(form.whatsapp_number))
-    errors.whatsapp_number = 'Enter 10 to 15 digits, including the country code.'
+    errors.whatsapp_number =
+      "Enter 10 to 15 digits, including the country code.";
 
-  if (!form.role) errors.role = 'Select a role.'
+  if (!form.role) errors.role = "Select a role.";
 
-  if (!form.join_date) errors.join_date = 'Select the join date.'
+  if (!form.join_date) errors.join_date = "Select the join date.";
   else if (form.join_date < MIN_DATE || form.join_date > MAX_DATE)
-    errors.join_date = 'Pick a date within one year of today.'
+    errors.join_date = "Pick a date within one year of today.";
 
-  if (!form.manager_whatsapp) errors.manager_whatsapp = "Enter the manager's WhatsApp number."
+  if (!form.manager_whatsapp)
+    errors.manager_whatsapp = "Enter the manager's WhatsApp number.";
   else if (!isPhone(form.manager_whatsapp))
-    errors.manager_whatsapp = 'Enter 10 to 15 digits, including the country code.'
+    errors.manager_whatsapp =
+      "Enter 10 to 15 digits, including the country code.";
 
-  return errors
+  return errors;
 }
 
 function Field({ label, hint, error, children }) {
@@ -67,77 +79,82 @@ function Field({ label, hint, error, children }) {
         hint && <p className="mt-1.5 text-xs text-neutral-500">{hint}</p>
       )}
     </div>
-  )
+  );
 }
 
 export default function App() {
-  const [form, setForm] = useState(emptyForm)
-  const [touched, setTouched] = useState({})
-  const [sent, setSent] = useState(false)
-  const [sending, setSending] = useState(false)
-  const [error, setError] = useState('')
+  const [form, setForm] = useState(emptyForm);
+  const [touched, setTouched] = useState({});
+  const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
 
-  const errors = validate(form)
+  const errors = validate(form);
 
-  const showError = (n) => touched[n] && errors[n]
+  const showError = (n) => touched[n] && errors[n];
 
   const inputClass = (n) =>
     `w-full rounded-none bg-transparent py-3 text-lg text-black outline-none ${
-      showError(n) ? 'border-b-2 border-black' : 'border-b border-neutral-300'
-    }`
+      showError(n) ? "border-b-2 border-black" : "border-b border-neutral-300"
+    }`;
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    const clean = name.includes('whatsapp') ? value.replace(/\D/g, '') : value
-    setForm({ ...form, [name]: clean })
-  }
+    const { name, value } = e.target;
+    const clean = name.includes("whatsapp") ? value.replace(/\D/g, "") : value;
+    setForm({ ...form, [name]: clean });
+  };
 
-  const handleBlur = (e) => setTouched({ ...touched, [e.target.name]: true })
+  const handleBlur = (e) => setTouched({ ...touched, [e.target.name]: true });
 
   const sameNumber =
-    isPhone(form.whatsapp_number) && form.whatsapp_number === form.manager_whatsapp
+    isPhone(form.whatsapp_number) &&
+    form.whatsapp_number === form.manager_whatsapp;
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (sending) return
+    e.preventDefault();
+    if (sending) return;
 
     if (Object.keys(errors).length > 0) {
-      setTouched(Object.fromEntries(FIELDS.map((f) => [f, true])))
-      return
+      setTouched(Object.fromEntries(FIELDS.map((f) => [f, true])));
+      return;
     }
 
     if (!WEBHOOK_URL) {
-      setError('The webhook URL is missing. Add VITE_WEBHOOK_URL to the .env file and restart the app.')
-      return
+      setError(
+        "The webhook URL is missing. Add VITE_WEBHOOK_URL to the .env file and restart the app.",
+      );
+      return;
     }
 
-    setSending(true)
-    setError('')
+    setSending(true);
+    setError("");
 
     try {
       const res = await fetch(WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          name: form.name.trim().replace(/\s+/g, ' '),
+          name: form.name.trim().replace(/\s+/g, " "),
         }),
-      })
-      if (!res.ok) throw new Error(`Request failed with status ${res.status}`)
-      setSent(true)
+      });
+      if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
+      setSent(true);
     } catch (err) {
-      setError(`The developer was not added. ${err.message}. Check your connection and try again.`)
+      setError(
+        `The developer was not added. ${err.message}. Check your connection and try again.`,
+      );
     } finally {
-      setSending(false)
+      setSending(false);
     }
-  }
+  };
 
   const addAnother = () => {
-    setForm(emptyForm)
-    setTouched({})
-    setSent(false)
-    setError('')
-  }
+    setForm(emptyForm);
+    setTouched({});
+    setSent(false);
+    setError("");
+  };
 
   return (
     <div className="min-h-screen bg-white text-black">
@@ -145,7 +162,12 @@ export default function App() {
         <p className="font-display text-xl font-extrabold tracking-tight">
           DevBuddy
         </p>
-        <p className="text-sm text-neutral-500">HR portal</p>
+        <a
+          href="#/dashboard"
+          className="text-sm font-medium underline underline-offset-4"
+        >
+          Manager dashboard
+        </a>
       </header>
 
       <main className="mx-auto w-full max-w-md px-6 pb-20 pt-16">
@@ -185,7 +207,7 @@ export default function App() {
             </h1>
 
             <div className="mt-12 space-y-9">
-              <Field label="Full name" error={showError('name')}>
+              <Field label="Full name" error={showError("name")}>
                 <input
                   name="name"
                   value={form.name}
@@ -193,14 +215,14 @@ export default function App() {
                   onBlur={handleBlur}
                   autoComplete="off"
                   disabled={sending}
-                  className={inputClass('name')}
+                  className={inputClass("name")}
                 />
               </Field>
 
               <Field
                 label="Developer WhatsApp number"
                 hint="Include the country code. Digits only."
-                error={showError('whatsapp_number')}
+                error={showError("whatsapp_number")}
               >
                 <input
                   name="whatsapp_number"
@@ -210,19 +232,19 @@ export default function App() {
                   inputMode="numeric"
                   autoComplete="off"
                   disabled={sending}
-                  className={inputClass('whatsapp_number')}
+                  className={inputClass("whatsapp_number")}
                 />
               </Field>
 
-              <Field label="Role" error={showError('role')}>
+              <Field label="Role" error={showError("role")}>
                 <select
                   name="role"
                   value={form.role}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   disabled={sending}
-                  className={`${inputClass('role')} cursor-pointer ${
-                    form.role ? 'text-black' : 'text-neutral-400'
+                  className={`${inputClass("role")} cursor-pointer ${
+                    form.role ? "text-black" : "text-neutral-400"
                   }`}
                 >
                   <option value="" disabled>
@@ -236,7 +258,7 @@ export default function App() {
                 </select>
               </Field>
 
-              <Field label="Join date" error={showError('join_date')}>
+              <Field label="Join date" error={showError("join_date")}>
                 <input
                   type="date"
                   name="join_date"
@@ -246,7 +268,7 @@ export default function App() {
                   onChange={handleChange}
                   onBlur={handleBlur}
                   disabled={sending}
-                  className={inputClass('join_date')}
+                  className={inputClass("join_date")}
                 />
               </Field>
 
@@ -257,7 +279,7 @@ export default function App() {
                     ? "This is the same number as the developer's."
                     : undefined
                 }
-                error={showError('manager_whatsapp')}
+                error={showError("manager_whatsapp")}
               >
                 <input
                   name="manager_whatsapp"
@@ -267,7 +289,7 @@ export default function App() {
                   inputMode="numeric"
                   autoComplete="off"
                   disabled={sending}
-                  className={inputClass('manager_whatsapp')}
+                  className={inputClass("manager_whatsapp")}
                 />
               </Field>
             </div>
@@ -288,12 +310,12 @@ export default function App() {
             >
               <span className="absolute inset-0 origin-left scale-x-0 bg-white transition-transform duration-300 group-enabled:group-hover:scale-x-100" />
               <span className="relative">
-                {sending ? 'Adding developer...' : 'Add developer'}
+                {sending ? "Adding developer..." : "Add developer"}
               </span>
             </button>
           </form>
         )}
       </main>
     </div>
-  )
+  );
 }
