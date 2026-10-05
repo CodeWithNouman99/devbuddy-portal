@@ -3,6 +3,7 @@
 The HR-facing website for **DevBuddy**, an AI onboarding buddy that looks after a new developer's first week at a software house. HR fills in one short form, and DevBuddy takes it from there: it saves the developer, sends a WhatsApp welcome with the Day 1 task, and keeps going every morning.
 
 Built for a fictional company, **Nexora Labs**.
+**Live demo:** https://devbuddy-portal.vercel.app/
 
 ## What the portal does
 
