@@ -138,11 +138,15 @@ export default function App() {
           name: form.name.trim().replace(/\s+/g, " "),
         }),
       });
+            if (res.status === 409) {
+        setError("This WhatsApp number is already registered. Use a different number.");
+        return;
+      }
       if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
       setSent(true);
     } catch (err) {
       setError(
-        `The developer was not added. ${err.message}. Check your connection and try again.`,
+        "The developer was not added. Check your connection and try again.",
       );
     } finally {
       setSending(false);

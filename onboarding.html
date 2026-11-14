@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foundry — Client Onboarding</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f5f5f2;
+    --surface:#ffffff;
+    --text:#0a0a0a;
+    --muted:#6b6b6b;
+    --border:rgba(10,10,10,0.12);
+    --border-strong:rgba(10,10,10,0.22);
+    --inverse-bg:#0a0a0a;
+    --inverse-text:#f5f5f2;
+    --focus:#0a0a0a;
+    --spot:rgba(10,10,10,0.06);
+    --font-display:'Space Grotesk', 'Helvetica Neue', Arial, sans-serif;
+    --font-body:'Inter', -apple-system, 'Segoe UI', sans-serif;
+    --font-mono:'JetBrains Mono', 'Courier New', monospace;
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0a0a0a;
+      --surface:#141414;
+      --text:#f5f5f2;
+      --muted:#8f8f8f;
+      --border:rgba(245,245,242,0.14);
+      --border-strong:rgba(245,245,242,0.28);
+      --inverse-bg:#f5f5f2;
+      --inverse-text:#0a0a0a;
+      --focus:#f5f5f2;
+      --spot:rgba(245,245,242,0.08);
+    }
+  }
+
+  :root[data-theme="dark"]{
+    --bg:#0a0a0a;
+    --surface:#141414;
+    --text:#f5f5f2;
+    --muted:#8f8f8f;
+    --border:rgba(245,245,242,0.14);
+    --border-strong:rgba(245,245,242,0.28);
+    --inverse-bg:#f5f5f2;
+    --inverse-text:#0a0a0a;
+    --focus:#f5f5f2;
+    --spot:rgba(245,245,242,0.08);
+  }
+
+  *{ box-sizing:border-box; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+
+  html,body{
+    margin:0;
+    padding:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    transition:background .35s ease, color .35s ease;
+  }
+
+  body{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+
+  a{ color:inherit; }
+  ::selection{ background:var(--text); color:var(--bg); }
+  :focus-visible{ outline:2px solid var(--focus); outline-offset:3px; }
+
+  /* ---------- Grain overlay ---------- */
+  .grain{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:2;
+    opacity:.035;
+    mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- Cursor spotlight ---------- */
+  .spotlight{
+    position:fixed;
+    top:0; left:0;
+    width:480px;
+    height:480px;
+    border-radius:50%;
+    pointer-events:none;
+    z-index:1;
+    transform:translate(-100%,-100%);
+    background:radial-gradient(circle, var(--spot) 0%, transparent 70%);
+    opacity:0;
+    transition:opacity .4s ease;
+    will-change:transform;
+  }
+
+  .spotlight.active{ opacity:1; }
+
+  /* ---------- Header ---------- */
+  header{
+    position:relative;
+    z-index:3;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:28px clamp(20px, 5vw, 64px);
+    border-bottom:1px solid var(--border);
+  }
+
+  .wordmark{
+    font-family:var(--font-mono);
+    font-size:15px;
+    font-weight:500;
+    letter-spacing:0.02em;
+  }
+
+  .header-right{ display:flex; align-items:center; gap:20px; }
+
+  .header-tag{
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--muted);
+    display:none;
+  }
+
+  @media (min-width:640px){ .header-tag{ display:inline; } }
+
+  .nav-link{
+    background:none;
+    border:none;
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--text);
+    cursor:pointer;
+    padding:0;
+    text-decoration:underline;
+    text-underline-offset:3px;
+    text-decoration-color:var(--border-strong);
+  }
+
+  .nav-link:hover{ text-decoration-color:var(--text); }
+
+  .theme-toggle{
+    position:relative;
+    width:52px;
+    height:28px;
+    border-radius:999px;
+    border:1px solid var(--border-strong);
+    background:transparent;
+    cursor:pointer;
+    padding:0;
+    flex-shrink:0;
+  }
+
+  .theme-toggle .knob{
+    position:absolute;
+    top:2px; left:2px;
+    width:22px; height:22px;
+    border-radius:50%;
+    background:var(--text);
+    transition:transform .3s cubic-bezier(.65,0,.35,1), background .3s ease;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  :root[data-theme="dark"] .theme-toggle .knob{ transform:translateX(24px); }
+
+  .theme-toggle svg{ width:12px; height:12px; stroke:var(--bg); }
+
+  /* ---------- Main layout ---------- */
+  main{
+    position:relative;
+    z-index:3;
+    flex:1;
+    display:grid;
+    grid-template-columns:1fr;
+  }
+
+  @media (min-width:960px){ main{ grid-template-columns:1.05fr 0.95fr; } }
+
+  .pitch{
+    position:relative;
+    padding:clamp(40px, 7vw, 96px) clamp(20px, 5vw, 64px);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    overflow:hidden;
+  }
+
+  .hero-art{
+    position:absolute;
+    top:50%; left:50%;
+    width:min(620px, 90vw);
+    height:min(620px, 90vw);
+    --px:0px; --py:0px;
+    transform:translate(calc(-50% + var(--px)), calc(-52% + var(--py)));
+    transition:transform .3s ease-out;
+    pointer-events:none;
+    z-index:0;
+    opacity:0;
+    animation:artFadeIn 1s ease forwards;
+    animation-delay:.15s;
+  }
+
+  @keyframes artFadeIn{ to{ opacity:1; } }
+
+  .hero-art svg{ width:100%; height:100%; }
+
+  .hero-art .ring-a{
+    transform-origin:center;
+    animation:spin 60s linear infinite;
+  }
+
+  .hero-art .ring-b{
+    transform-origin:center;
+    animation:spinReverse 42s linear infinite;
+  }
+
+  .hero-art .ring-c{
+    transform-origin:center;
+    animation:spin 90s linear infinite;
+  }
+
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  @keyframes spinReverse{ to{ transform:rotate(-360deg); } }
+
+  .floaters{
+    position:absolute;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+  }
+
+  .floaters span{
+    position:absolute;
+    font-family:var(--font-mono);
+    font-size:14px;
+    color:var(--muted);
+    opacity:0;
+    animation:floatUp 6s ease-in-out infinite, floatFadeIn .8s ease forwards;
+  }
+
+  .floaters span:nth-child(1){ top:14%; left:8%;  animation-delay:.6s, .6s; }
+  .floaters span:nth-child(2){ top:22%; left:88%; animation-delay:1.1s, 1.1s; font-size:11px; }
+  .floaters span:nth-child(3){ top:68%; left:5%;  animation-delay:.9s, .9s; font-size:18px; }
+  .floaters span:nth-child(4){ top:78%; left:90%; animation-delay:1.4s, 1.4s; }
+  .floaters span:nth-child(5){ top:46%; left:95%; animation-delay:1.7s, 1.7s; font-size:11px; }
+
+  @keyframes floatFadeIn{ to{ opacity:.35; } }
+
+  @keyframes floatUp{
+    0%, 100%{ transform:translateY(0); }
+    50%{ transform:translateY(-16px); }
+  }
+
+  .pitch h1, .pitch p.lede, .pitch .steps{
+    position:relative;
+    z-index:1;
+  }
+
+  .pitch h1{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:clamp(34px, 5.2vw, 58px);
+    line-height:1.05;
+    letter-spacing:-0.01em;
+    margin:0 0 20px 0;
+    max-width:14ch;
+  }
+
+  .pitch h1 .line{ display:block; overflow:hidden; }
+
+  .pitch h1 .line span{
+    display:block;
+    transform:translateY(110%);
+    opacity:0;
+    animation:rise .7s cubic-bezier(.22,1,.36,1) forwards;
+  }
+
+  .pitch h1 .line:nth-child(1) span{ animation-delay:.05s; }
+  .pitch h1 .line:nth-child(2) span{ animation-delay:.14s; }
+  .pitch h1 .line:nth-child(3) span{ animation-delay:.23s; }
+
+  @keyframes rise{ to{ transform:translateY(0); opacity:1; } }
+
+  .pitch p.lede{
+    font-size:16px;
+    line-height:1.65;
+    color:var(--muted);
+    max-width:42ch;
+    margin:0 0 44px 0;
+    opacity:0;
+    animation:fadeIn .7s ease forwards;
+    animation-delay:.4s;
+  }
+
+  @keyframes fadeIn{ to{ opacity:1; } }
+
+  .steps{
+    list-style:none;
+    margin:0; padding:0;
+    display:flex;
+    flex-direction:column;
+    max-width:440px;
+  }
+
+  .steps li{
+    display:flex;
+    gap:18px;
+    padding:18px 0;
+    border-top:1px solid var(--border);
+    opacity:0;
+    animation:fadeIn .6s ease forwards;
+  }
+
+  .steps li:last-child{ border-bottom:1px solid var(--border); }
+  .steps li:nth-child(1){ animation-delay:.5s; }
+  .steps li:nth-child(2){ animation-delay:.58s; }
+  .steps li:nth-child(3){ animation-delay:.66s; }
+  .steps li:nth-child(4){ animation-delay:.74s; }
+
+  .steps .num{
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--muted);
+    padding-top:2px;
+    flex-shrink:0;
+    width:24px;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .steps .step-body h3{
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:15px;
+    margin:0 0 4px 0;
+  }
+
+  .steps .step-body p{
+    font-size:13.5px;
+    color:var(--muted);
+    margin:0;
+    line-height:1.5;
+  }
+
+  /* ---------- Form panel ---------- */
+  .panel{
+    background:var(--surface);
+    border-left:1px solid var(--border);
+    padding:clamp(32px, 6vw, 72px) clamp(20px, 5vw, 64px);
+    display:flex;
+    align-items:center;
+  }
+
+  @media (max-width:959px){ .panel{ border-left:none; border-top:1px solid var(--border); } }
+
+  .card{
+    width:100%;
+    max-width:480px;
+    margin:0 auto;
+    opacity:0;
+    animation:fadeIn .7s ease forwards;
+    animation-delay:.3s;
+  }
+
+  .progress-track{
+    height:2px;
+    width:100%;
+    background:var(--border);
+    margin-bottom:28px;
+    overflow:hidden;
+  }
+
+  .progress-fill{
+    height:100%;
+    width:0%;
+    background:var(--text);
+    transition:width .35s cubic-bezier(.65,0,.35,1);
+  }
+
+  .card-head{ margin-bottom:24px; }
+
+  .card-head h2{
+    font-family:var(--font-display);
+    font-size:22px;
+    font-weight:600;
+    margin:0 0 8px 0;
+  }
+
+  .card-head p{ font-size:14px; color:var(--muted); margin:0; line-height:1.5; }
+
+  .field{ margin-bottom:22px; }
+
+  .field label{
+    display:block;
+    font-size:13px;
+    font-weight:500;
+    margin-bottom:8px;
+  }
+
+  .field .hint{ font-size:12px; color:var(--muted); margin-top:6px; }
+
+  input, select, textarea{
+    width:100%;
+    background:transparent;
+    border:none;
+    border-bottom:1.5px solid var(--border-strong);
+    color:var(--text);
+    font-family:var(--font-body);
+    font-size:15px;
+    padding:9px 2px;
+    transition:border-color .25s ease;
+  }
+
+  textarea{ resize:vertical; min-height:72px; line-height:1.5; }
+  input::placeholder, textarea::placeholder{ color:var(--muted); opacity:.7; }
+
+  select{
+    appearance:none;
+    -webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238f8f8f' stroke-width='1.5' fill='none' fill-rule='evenodd'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 4px center;
+    padding-right:20px;
+  }
+
+  select option{ background:var(--surface); color:var(--text); }
+
+  .field-underline{ position:relative; }
+
+  .field-underline::after{
+    content:'';
+    position:absolute;
+    left:0; bottom:-1.5px;
+    height:1.5px; width:0;
+    background:var(--text);
+    transition:width .3s cubic-bezier(.65,0,.35,1);
+  }
+
+  .field-underline:focus-within::after{ width:100%; }
+  input:focus, select:focus, textarea:focus{ outline:none; border-color:transparent; }
+
+  .submit-btn{
+    width:100%;
+    padding:15px 20px;
+    background:var(--inverse-bg);
+    color:var(--inverse-text);
+    border:none;
+    border-radius:2px;
+    font-family:var(--font-body);
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    margin-top:8px;
+    position:relative;
+    transition:transform .12s ease, opacity .2s ease;
+  }
+
+  .submit-btn:hover{ opacity:.9; }
+  .submit-btn:active{ transform:scale(.98) !important; }
+  .submit-btn:disabled{ opacity:.5; cursor:not-allowed; }
+
+  .status-msg{ margin-top:16px; font-size:13.5px; line-height:1.5; display:none; }
+  .status-msg.show{ display:block; }
+  .status-msg.error{ color:#c0392b; }
+  .status-msg.success{ color:var(--muted); }
+
+  .success-view{ display:none; text-align:left; }
+  .success-view.show{ display:block; }
+
+  .success-view h2{
+    font-family:var(--font-display);
+    font-size:24px;
+    font-weight:600;
+    margin:0 0 12px 0;
+  }
+
+  .success-view p{ font-size:14.5px; color:var(--muted); line-height:1.6; margin:0 0 6px 0; }
+
+  .success-check{
+    width:44px; height:44px;
+    border-radius:50%;
+    border:1.5px solid var(--border-strong);
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:20px;
+  }
+
+  .success-check svg{ width:20px; height:20px; }
+
+  .success-check path{
+    stroke:var(--text);
+    fill:none;
+    stroke-width:2;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    stroke-dasharray:30;
+    stroke-dashoffset:30;
+  }
+
+  .success-check.draw path{
+    animation:draw .55s ease forwards .1s;
+  }
+
+  @keyframes draw{ to{ stroke-dashoffset:0; } }
+
+  /* ---------- Footer marquee ---------- */
+  /* ---------- Dashboard ---------- */
+  .dashboard{
+    display:none;
+    position:relative;
+    z-index:3;
+    flex:1;
+    padding:clamp(32px, 6vw, 72px) clamp(20px, 5vw, 64px);
+  }
+
+  .dashboard.show{ display:block; }
+
+  .dashboard-inner{
+    max-width:900px;
+    margin:0 auto;
+  }
+
+  .dashboard-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:28px;
+    flex-wrap:wrap;
+  }
+
+  .dashboard-head h2{
+    font-family:var(--font-display);
+    font-size:28px;
+    font-weight:600;
+    margin:0 0 6px 0;
+  }
+
+  .dashboard-count{
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--muted);
+    margin:0;
+  }
+
+  .dashboard-status{
+    font-size:14px;
+    color:var(--muted);
+  }
+
+  .table-wrap{
+    overflow-x:auto;
+    border:1px solid var(--border);
+  }
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:14px;
+  }
+
+  thead th{
+    text-align:left;
+    font-family:var(--font-mono);
+    font-weight:500;
+    font-size:12px;
+    letter-spacing:0.02em;
+    color:var(--muted);
+    padding:14px 16px;
+    border-bottom:1px solid var(--border-strong);
+    white-space:nowrap;
+  }
+
+  tbody td{
+    padding:14px 16px;
+    border-bottom:1px solid var(--border);
+    vertical-align:top;
+  }
+
+  tbody tr:last-child td{ border-bottom:none; }
+
+  tbody td .client-email{
+    display:block;
+    font-size:12px;
+    color:var(--muted);
+    margin-top:2px;
+  }
+
+  .badge{
+    display:inline-block;
+    font-family:var(--font-mono);
+    font-size:11px;
+    padding:3px 8px;
+    border:1px solid var(--border-strong);
+    border-radius:2px;
+    color:var(--muted);
+  }
+
+  footer{
+    position:relative;
+    z-index:3;
+    border-top:1px solid var(--border);
+    padding:18px 0;
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+  }
+
+  .marquee-track{
+    display:flex;
+    white-space:nowrap;
+    animation:scroll 26s linear infinite;
+  }
+
+  footer:hover .marquee-track{ animation-play-state:paused; }
+
+  .marquee-track span{
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--muted);
+    padding:0 28px;
+    flex-shrink:0;
+  }
+
+  @keyframes scroll{
+    from{ transform:translateX(0); }
+    to{ transform:translateX(-50%); }
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<div class="spotlight" id="spotlight"></div>
+
+<header>
+  <div class="wordmark">FOUNDRY.</div>
+  <div class="header-right">
+    <span class="header-tag">Client Onboarding</span>
+    <button class="nav-link" id="dashboardLink">Dashboard</button>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle color theme" aria-pressed="false">
+      <span class="knob">
+        <svg id="knobIcon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+      </span>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="pitch">
+    <div class="hero-art" aria-hidden="true" id="heroArt">
+      <svg viewBox="0 0 400 400">
+        <circle class="ring-a" cx="200" cy="200" r="188" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2 10" style="color:var(--border-strong)"/>
+        <circle class="ring-b" cx="200" cy="200" r="150" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="1 6" style="color:var(--border-strong)"/>
+        <circle class="ring-c" cx="200" cy="200" r="115" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="6 4 1 4" style="color:var(--border)"/>
+        <circle r="3.5" fill="var(--text)">
+          <animateMotion dur="9s" repeatCount="indefinite" path="M 200,12 A 188,188 0 1,1 199.9,12 A 188,188 0 1,1 200,12"/>
+        </circle>
+      </svg>
+    </div>
+    <div class="floaters" aria-hidden="true">
+      <span>+</span>
+      <span>+</span>
+      <span>+</span>
+      <span>+</span>
+      <span>+</span>
+    </div>
+    <h1>
+      <span class="line"><span>Let's map</span></span>
+      <span class="line"><span>out your</span></span>
+      <span class="line"><span>project.</span></span>
+    </h1>
+    <p class="lede">Tell us where you're headed. We'll set up the workspace, the team channel, and a kickoff call before you're even back to your other tabs.</p>
+
+    <ol class="steps">
+      <li>
+        <span class="num" data-target="1">00</span>
+        <div class="step-body">
+          <h3>Workspace goes live</h3>
+          <p>Your project folders are created and organized automatically.</p>
+        </div>
+      </li>
+      <li>
+        <span class="num" data-target="2">00</span>
+        <div class="step-body">
+          <h3>Team channel opens</h3>
+          <p>A dedicated channel is created so your team can start talking right away.</p>
+        </div>
+      </li>
+      <li>
+        <span class="num" data-target="3">00</span>
+        <div class="step-body">
+          <h3>Confirmation sent</h3>
+          <p>You'll get an email with what to expect and who's on the project.</p>
+        </div>
+      </li>
+      <li>
+        <span class="num" data-target="4">00</span>
+        <div class="step-body">
+          <h3>Kickoff scheduled</h3>
+          <p>We'll put time on the calendar to align on scope and next steps.</p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="panel">
+    <div class="card" id="cardWrap">
+      <div id="formView">
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+        <div class="card-head">
+          <h2>Project intake form</h2>
+          <p>A few details and we'll take it from here.</p>
+        </div>
+
+        <form id="intakeForm" novalidate>
+          <div class="field">
+            <label for="clientName">Your name / company</label>
+            <div class="field-underline">
+              <input type="text" id="clientName" name="clientName" placeholder="e.g. Ali Traders" required autocomplete="organization">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="clientEmail">Email</label>
+            <div class="field-underline">
+              <input type="email" id="clientEmail" name="clientEmail" placeholder="you@company.com" required autocomplete="email">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="whatsapp">WhatsApp number</label>
+            <div class="field-underline">
+              <input type="tel" id="whatsapp" name="whatsappNumber" placeholder="+92 300 1234567" required autocomplete="tel">
+            </div>
+            <div class="hint">Include your country code.</div>
+          </div>
+
+          <div class="field">
+            <label for="projectType">Project type</label>
+            <div class="field-underline">
+              <select id="projectType" name="projectType" required>
+                <option value="" disabled selected>Choose one</option>
+                <option value="Web Development">Web Development</option>
+                <option value="Mobile App">Mobile App</option>
+                <option value="Automation/n8n Workflow">Automation / Workflow</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="teamMembers">Team members</label>
+            <div class="field-underline">
+              <input type="text" id="teamMembers" name="teamMembers" placeholder="email1@company.com, email2@company.com" required>
+            </div>
+            <div class="hint">Separate multiple emails with a comma.</div>
+          </div>
+
+          <div class="field">
+            <label for="projectDescription">Project description</label>
+            <div class="field-underline">
+              <textarea id="projectDescription" name="projectDescription" placeholder="What are we building?" required></textarea>
+            </div>
+          </div>
+
+          <button type="submit" class="submit-btn" id="submitBtn">Send project details</button>
+          <div class="status-msg" id="statusMsg"></div>
+        </form>
+      </div>
+
+      <div class="success-view" id="successView">
+        <div class="success-check" id="successCheck">
+          <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <h2>You're in.</h2>
+        <p>Your project details are on their way to the team.</p>
+        <p>Check your inbox for a confirmation — we'll follow up shortly to schedule your kickoff call.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<section class="dashboard" id="dashboardView">
+  <div class="dashboard-inner">
+    <div class="dashboard-head">
+      <div>
+        <h2>Onboarded clients</h2>
+        <p id="dashboardCount" class="dashboard-count">Loading…</p>
+      </div>
+      <button class="nav-link" id="backLink">Back to form</button>
+    </div>
+
+    <div id="dashboardBody">
+      <p class="dashboard-status" id="dashboardStatus">Fetching client log…</p>
+      <div class="table-wrap" id="tableWrap" style="display:none;">
+        <table id="clientTable">
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Project type</th>
+              <th>Status</th>
+              <th>Onboarded</th>
+            </tr>
+          </thead>
+          <tbody id="clientTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="marquee-track">
+    <span>WEB DEVELOPMENT</span><span>MOBILE APPS</span><span>AUTOMATION</span><span>CLIENT ONBOARDING</span><span>FOUNDRY.</span>
+    <span>WEB DEVELOPMENT</span><span>MOBILE APPS</span><span>AUTOMATION</span><span>CLIENT ONBOARDING</span><span>FOUNDRY.</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var root = document.documentElement;
+  var toggle = document.getElementById('themeToggle');
+  var knobIcon = document.getElementById('knobIcon');
+  var isFinePointer = window.matchMedia('(pointer: fine)').matches;
+  var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var MOON = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+  var SUN = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>';
+
+  function applyTheme(theme){
+    root.setAttribute('data-theme', theme);
+    toggle.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+    knobIcon.innerHTML = theme === 'dark' ? MOON : SUN;
+  }
+
+  var saved = null;
+  try{ saved = localStorage.getItem('foundry-theme'); } catch(e){}
+  applyTheme(saved || 'dark');
+
+  toggle.addEventListener('click', function(){
+    var current = root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    var next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    try{ localStorage.setItem('foundry-theme', next); } catch(e){}
+  });
+
+  // ---------- Cursor spotlight + hero parallax ----------
+  var heroArt = document.getElementById('heroArt');
+  if(isFinePointer && !prefersReducedMotion){
+    var spot = document.getElementById('spotlight');
+    window.addEventListener('mousemove', function(e){
+      spot.style.transform = 'translate(' + (e.clientX - 240) + 'px,' + (e.clientY - 240) + 'px)';
+      spot.classList.add('active');
+
+      var cx = window.innerWidth / 2;
+      var cy = window.innerHeight / 2;
+      var px = ((e.clientX - cx) / cx) * -14;
+      var py = ((e.clientY - cy) / cy) * -14;
+      heroArt.style.setProperty('--px', px + 'px');
+      heroArt.style.setProperty('--py', py + 'px');
+    });
+    window.addEventListener('mouseleave', function(){ spot.classList.remove('active'); });
+  }
+
+  // ---------- Magnetic submit button ----------
+  var submitBtn = document.getElementById('submitBtn');
+  if(isFinePointer && !prefersReducedMotion){
+    submitBtn.addEventListener('mousemove', function(e){
+      var r = submitBtn.getBoundingClientRect();
+      var x = (e.clientX - r.left - r.width / 2) * 0.15;
+      var y = (e.clientY - r.top - r.height / 2) * 0.3;
+      submitBtn.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+    });
+    submitBtn.addEventListener('mouseleave', function(){
+      submitBtn.style.transform = 'translate(0,0)';
+    });
+  }
+
+  // ---------- Step number count-up ----------
+  var nums = document.querySelectorAll('.steps .num');
+  nums.forEach(function(el, i){
+    var target = parseInt(el.getAttribute('data-target'), 10);
+    var delay = 500 + i * 80;
+    setTimeout(function(){
+      var current = 0;
+      var iv = setInterval(function(){
+        current++;
+        el.textContent = String(Math.min(current, target)).padStart(2, '0');
+        if(current >= target) clearInterval(iv);
+      }, 90);
+    }, delay);
+  });
+
+  // ---------- Form progress ----------
+  var form = document.getElementById('intakeForm');
+  var progressFill = document.getElementById('progressFill');
+  var fields = ['clientName','clientEmail','whatsappNumber','projectType','teamMembers','projectDescription'];
+
+  function updateProgress(){
+    var filled = 0;
+    fields.forEach(function(name){
+      if(form[name] && form[name].value.trim().length > 0) filled++;
+    });
+    progressFill.style.width = (filled / fields.length * 100) + '%';
+  }
+  form.addEventListener('input', updateProgress);
+  form.addEventListener('change', updateProgress);
+
+  // ---------- Dashboard ----------
+  var DASHBOARD_URL = 'https://nouman-aslam.app.n8n.cloud/webhook/dashboard-data';
+
+  var mainEl = document.querySelector('main');
+  var dashboardView = document.getElementById('dashboardView');
+  var dashboardLink = document.getElementById('dashboardLink');
+  var backLink = document.getElementById('backLink');
+  var dashboardStatus = document.getElementById('dashboardStatus');
+  var dashboardCount = document.getElementById('dashboardCount');
+  var tableWrap = document.getElementById('tableWrap');
+  var clientTableBody = document.getElementById('clientTableBody');
+  var dashboardLoaded = false;
+
+  function escapeHtml(str){
+    var div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
+  }
+
+  function formatDate(iso){
+    try{
+      var d = new Date(iso);
+      if(isNaN(d.getTime())) return iso || '—';
+      return d.toLocaleDateString(undefined, { day:'2-digit', month:'short', year:'numeric' });
+    }catch(e){ return iso || '—'; }
+  }
+
+  function renderClients(rows){
+    if(!rows || !rows.length){
+      dashboardStatus.textContent = 'No clients onboarded yet.';
+      dashboardStatus.style.display = 'block';
+      tableWrap.style.display = 'none';
+      dashboardCount.textContent = '0 clients';
+      return;
+    }
+
+    clientTableBody.innerHTML = rows.map(function(r){
+      var name = r['Client Name'] || r.clientName || '—';
+      var email = r['Client Email'] || r.clientEmail || '';
+      var type = r['Project Type'] || r.projectType || '—';
+      var status = r['Status'] || r.status || 'Onboarded';
+      var ts = r['Timestamp'] || r.timestamp || '';
+      return '<tr>' +
+        '<td>' + escapeHtml(name.trim ? name.trim() : name) + (email ? '<span class="client-email">' + escapeHtml(email) + '</span>' : '') + '</td>' +
+        '<td>' + escapeHtml(type) + '</td>' +
+        '<td><span class="badge">' + escapeHtml(status) + '</span></td>' +
+        '<td>' + escapeHtml(formatDate(ts)) + '</td>' +
+        '</tr>';
+    }).join('');
+
+    dashboardStatus.style.display = 'none';
+    tableWrap.style.display = 'block';
+    dashboardCount.textContent = rows.length + (rows.length === 1 ? ' client' : ' clients');
+  }
+
+  function loadDashboard(){
+    dashboardStatus.style.display = 'block';
+    dashboardStatus.textContent = 'Fetching client log…';
+    tableWrap.style.display = 'none';
+
+    fetch(DASHBOARD_URL)
+      .then(function(res){
+        if(!res.ok) throw new Error('Request failed');
+        return res.json();
+      })
+      .then(function(data){
+        var rows = Array.isArray(data) ? data : (data && data.data) || [];
+        renderClients(rows);
+        dashboardLoaded = true;
+      })
+      .catch(function(){
+        dashboardStatus.textContent = 'Could not load the client log right now. Please try again shortly.';
+        dashboardCount.textContent = '';
+      });
+  }
+
+  dashboardLink.addEventListener('click', function(){
+    mainEl.style.display = 'none';
+    dashboardView.classList.add('show');
+    if(!dashboardLoaded) loadDashboard();
+  });
+
+  backLink.addEventListener('click', function(){
+    dashboardView.classList.remove('show');
+    mainEl.style.display = 'grid';
+  });
+
+  // ---------- Form submission ----------
+  var WEBHOOK_URL = 'https://nouman-aslam.app.n8n.cloud/webhook-test/client-onboarding';
+
+  var statusMsg = document.getElementById('statusMsg');
+  var formView = document.getElementById('formView');
+  var successView = document.getElementById('successView');
+  var successCheck = document.getElementById('successCheck');
+
+  function showStatus(text, type){
+    statusMsg.textContent = text;
+    statusMsg.className = 'status-msg show ' + type;
+  }
+
+  function revealSuccess(){
+    formView.style.display = 'none';
+    successView.classList.add('show');
+    requestAnimationFrame(function(){ successCheck.classList.add('draw'); });
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    statusMsg.className = 'status-msg';
+
+    var payload = {
+      clientName: form.clientName.value.trim(),
+      clientEmail: form.clientEmail.value.trim(),
+      whatsappNumber: form.whatsappNumber.value.trim(),
+      projectType: form.projectType.value,
+      teamMembers: form.teamMembers.value.trim(),
+      projectDescription: form.projectDescription.value.trim()
+    };
+
+    if(!payload.clientName || !payload.clientEmail || !payload.whatsappNumber || !payload.projectType || !payload.teamMembers || !payload.projectDescription){
+      showStatus('Please fill in every field before sending.', 'error');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending…';
+
+    if(!WEBHOOK_URL){
+      setTimeout(revealSuccess, 700);
+      return;
+    }
+
+    fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(function(res){
+      if(!res.ok) throw new Error('Request failed');
+      revealSuccess();
+    }).catch(function(){
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Send project details';
+      showStatus('Something went wrong sending your details. Please try again.', 'error');
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
