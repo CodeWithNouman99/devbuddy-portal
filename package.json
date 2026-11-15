@@ -1,0 +1,15 @@
+{
+  "name": "devbuddy-app",
+  "version": "1.0.0",
+  "description": "DevBuddy: React client + Express API, deployed together on Vercel",
+  "private": true,
+  "license": "ISC",
+  "type": "commonjs",
+  "scripts": {
+    "install:all": "npm ci --prefix server && npm ci --prefix client",
+    "build": "npm run build --prefix client"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
