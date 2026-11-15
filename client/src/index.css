@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+/*
+  Design tokens. Tailwind v4 turns each --color-* into utility classes,
+  e.g. --color-primary -> bg-primary, text-primary, border-primary.
+*/
+@theme {
+  --color-page: #F5F2EB;      /* page background */
+  --color-card: #FFFDF8;      /* cards */
+  --color-line: #E2DCCF;      /* card borders, input borders */
+  --color-ink: #1C1B18;       /* main text */
+  --color-muted: #57534A;     /* secondary text */
+  --color-primary: #1F4D3A;   /* buttons, brand panel */
+  --color-warn-bg: #FBE7D3;   /* warning / error box background */
+  --color-warn-text: #8A3B0B; /* warning / error box text */
+
+  /* Onboarding progress (7-segment bar, timeline, status pills) */
+  --color-seg-current: #7FA391;  /* today's task, on track */
+  --color-stuck: #C2410C;        /* today's task, pending > 1 day */
+  --color-seg-upcoming: #E8E2D5; /* days not reached yet */
+  --color-ok-bg: #E4EDE7;        /* "On track" pill background */
+  --color-bar-ok: #3F7A5E;       /* "On track" bars in charts (3:1+ on cards) */
+
+  --radius-card: 16px;
+
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-serif: "Fraunces", Georgia, serif;
+}
+
+body {
+  background-color: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* All headings use Fraunces 600 */
+h1, h2, h3 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+}
